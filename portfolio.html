@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ruxaen — Software Engineer Portfolio. Precision engineering, computational design, and technical craftsmanship.">
+  <title>ruxaen — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════
+       RESET
+       ══════════════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000000;
+      cursor: default;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ══════════════════════════════════════════════
+       CANVAS — Particle surface layer
+       ══════════════════════════════════════════════ */
+    canvas#surface {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* ══════════════════════════════════════════════
+       LANDING TYPOGRAPHY — Fixed foreground
+       ══════════════════════════════════════════════ */
+    .typography-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .title {
+      font-family: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+      font-weight: 400;
+      font-size: clamp(56px, 12vw, 170px);
+      color: #ffffff;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .tagline {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 200;
+      font-size: clamp(10px, 1.2vw, 15px);
+      color: rgba(255, 255, 255, 0.40);
+      letter-spacing: 0.32em;
+      margin-top: clamp(14px, 2.2vh, 32px);
+    }
+
+    /* ══════════════════════════════════════════════
+       PORTFOLIO LAYER — Appears during transition
+       ══════════════════════════════════════════════ */
+    .portfolio {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .portfolio.interactive {
+      pointer-events: auto;
+    }
+
+    /* ── Navigation Column ── */
+    .pf-nav {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--divider-x, 120px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 52px 22px 52px 20px;
+    }
+
+    .pf-nav-item {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      text-transform: lowercase;
+      display: block;
+      cursor: pointer;
+      transition: color 0.3s ease, opacity 0.3s ease;
+      position: relative;
+    }
+
+    .pf-nav-item:hover {
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .pf-nav-item.active {
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 400;
+    }
+
+    .pf-nav-item.active::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .pf-nav-brand {
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.65);
+      letter-spacing: 0.22em;
+      font-size: 11px;
+    }
+
+    .pf-nav-main {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      align-items: flex-end;
+    }
+
+    .pf-nav-social {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-end;
+    }
+
+    .pf-social-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .pf-social-item svg {
+      width: 15px;
+      height: 15px;
+      stroke: rgba(255, 255, 255, 0.30);
+      fill: none;
+      transition: stroke 0.3s ease;
+    }
+
+    .pf-social-item:hover svg {
+      stroke: rgba(255, 255, 255, 0.85);
+    }
+
+    .pf-social-label {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.0);
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      transition: color 0.3s ease, transform 0.3s ease;
+      transform: translateX(-4px);
+    }
+
+    .pf-social-item:hover .pf-social-label {
+      color: rgba(255, 255, 255, 0.55);
+      transform: translateX(0);
+    }
+
+    /* ── Content Area ── */
+    .pf-content {
+      position: absolute;
+      left: calc(var(--divider-x, 120px) + 48px);
+      top: 0;
+      right: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-behavior: smooth;
+    }
+
+    .pf-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ── Sections ── */
+    .pf-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 32px 80px 0;
+      max-width: 580px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+
+    .pf-section.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .pf-name {
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      font-weight: 500;
+      font-size: clamp(34px, 5vw, 58px);
+      color: #ffffff;
+      letter-spacing: 0.015em;
+      line-height: 1.1;
+      margin-bottom: 28px;
+    }
+
+    .pf-bio {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pf-bio p {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 300;
+      font-size: clamp(12px, 1.3vw, 15px);
+      color: rgba(255, 255, 255, 0.55);
+      line-height: 1.75;
+    }
+
+    .pf-bio p:first-child {
+      color: rgba(255, 255, 255, 0.78);
+      font-weight: 400;
+      font-size: clamp(13px, 1.4vw, 16px);
+    }
+
+    .pf-closing {
+      font-style: italic;
+      margin-top: 10px;
+      color: rgba(255, 255, 255, 0.30) !important;
+      font-weight: 200 !important;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Archive Section ── */
+    .pf-section-title {
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      font-weight: 400;
+      font-size: clamp(28px, 4vw, 42px);
+      color: #ffffff;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .pf-section-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .pf-archive-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pf-archive-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .pf-archive-item:first-child {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .pf-archive-name {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .pf-archive-tag {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.25);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Email / Ending Section ── */
+    .pf-ending {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 80px 32px 80px 0;
+      max-width: 620px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+
+    .pf-ending.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .pf-ending-heading {
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      font-weight: 500;
+      font-size: clamp(36px, 5.5vw, 64px);
+      color: #ffffff;
+      line-height: 1.15;
+      margin-bottom: 28px;
+    }
+
+    .pf-ending-sub {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 300;
+      font-size: clamp(12px, 1.2vw, 15px);
+      color: rgba(255, 255, 255, 0.40);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 480px;
+    }
+
+    .pf-ending-email {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 300;
+      font-size: clamp(16px, 2vw, 22px);
+      color: rgba(255, 255, 255, 0.80);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      transition: color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .pf-ending-email:hover {
+      color: rgba(255, 255, 255, 1.0);
+      border-color: rgba(255, 255, 255, 0.50);
+    }
+
+    /* ══════════════════════════════════════════════
+       SCROLL HINT
+       ══════════════════════════════════════════════ */
+    .scroll-hint {
+      position: fixed;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .scroll-hint span {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.15);
+    }
+
+    .scroll-hint .chevron {
+      display: block;
+      margin-top: 6px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.10);
+      animation: bob 3s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(5px); opacity: 0.4; }
+    }
+
+    /* ══════════════════════════════════════════════
+       RESPONSIVE
+       ══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .pf-nav { padding: 32px 14px 32px 12px; }
+      .pf-nav-main { gap: 20px; }
+      .pf-content { left: calc(var(--divider-x, 90px) + 28px); }
+      .pf-section { padding: 60px 16px 60px 0; min-height: 80vh; }
+      .pf-ending { padding: 60px 16px 60px 0; min-height: 80vh; }
+      .pf-name { margin-bottom: 20px; }
+      .pf-bio { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Particle Surface Canvas -->
+  <canvas id="surface"></canvas>
+
+  <!-- Landing Typography — fixed, never moves, fades during transition -->
+  <div class="typography-layer" id="typography">
+    <h1 class="title" id="landing-title">ruxaen</h1>
+    <p class="tagline" id="landing-tagline">Always building. Never finished.</p>
+  </div>
+
+  <!-- Scroll Hint — visible only in landing state -->
+  <div class="scroll-hint" id="scroll-hint">
+    <span>scroll</span>
+    <span class="chevron">&#8964;</span>
+  </div>
+
+  <!-- Portfolio Interface — revealed by transition -->
+  <div class="portfolio" id="portfolio">
+    <nav class="pf-nav" id="pf-nav">
+      <span class="pf-nav-item pf-nav-brand" data-order="0" id="nav-brand">ruxaen</span>
+      <div class="pf-nav-main">
+        <a class="pf-nav-item" data-order="1" href="#about">about</a>
+        <a class="pf-nav-item" data-order="2" href="#archive">archive</a>
+      </div>
+      <div class="pf-nav-social">
+        <!-- GitHub -->
+        <a class="pf-social-item" data-order="3" href="https://github.com/ruxaen" target="_blank" rel="noopener">
+          <span class="pf-social-label">github</span>
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9.39 16V22"></path></svg>
+        </a>
+        <!-- LinkedIn -->
+        <a class="pf-social-item" data-order="4" href="#" target="_blank" rel="noopener">
+          <span class="pf-social-label">linkedin</span>
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+        <!-- X -->
+        <a class="pf-social-item" data-order="5" href="#" target="_blank" rel="noopener">
+          <span class="pf-social-label">x</span>
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l6.5 7.5M20 4l-6.5 7.5m0 0L20 20h-4.5l-3.5-4.5m0 0L4 20h4.5l3.5-4.5"></path></svg>
+        </a>
+        <!-- Instagram -->
+        <a class="pf-social-item" data-order="6" href="https://instagram.com/ruxaen" target="_blank" rel="noopener">
+          <span class="pf-social-label">instagram</span>
+          <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+      </div>
+    </nav>
+
+    <main class="pf-content" id="pf-content">
+      <!-- About -->
+      <section id="about" class="pf-section">
+        <h2 class="pf-name">Rooshan Samar</h2>
+        <div class="pf-bio">
+          <p>Curiosity usually turns into a project.</p>
+          <p>Right now I’m exploring software engineering, AI&#8209;assisted development, and frontend experiences that feel thoughtful rather than flashy.</p>
+          <p>I enjoy breaking ideas apart, figuring out how they work, and rebuilding them better&thinsp;&mdash;&thinsp;from interaction design to development workflows.</p>
+          <p>Currently building projects, learning every day, and sharing the journey as I go.</p>
+          <p class="pf-closing">Always building. Never finished.</p>
+        </div>
+      </section>
+
+      <!-- Archive -->
+      <section id="archive" class="pf-section">
+        <h2 class="pf-section-title">Archive</h2>
+        <p class="pf-section-subtitle">Selected Work</p>
+        <div class="pf-archive-list">
+          <div class="pf-archive-item">
+            <span class="pf-archive-name">Portfolio Website</span>
+            <span class="pf-archive-tag">In Progress</span>
+          </div>
+          <div class="pf-archive-item">
+            <span class="pf-archive-name">Attendance Tracker</span>
+            <span class="pf-archive-tag">Coming Soon</span>
+          </div>
+          <div class="pf-archive-item">
+            <span class="pf-archive-name">AI Experiments</span>
+            <span class="pf-archive-tag">Coming Soon</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Email / Ending -->
+      <section id="ending" class="pf-ending">
+        <h2 class="pf-ending-heading">Let’s discuss systems.</h2>
+        <p class="pf-ending-sub">I am looking forward to collaborating on high&#8209;fidelity web builds, systems architecture, or engineering projects.</p>
+        <a class="pf-ending-email" href="mailto:rooshansamar@gmail.com">rooshansamar@gmail.com</a>
+      </section>
+    </main>
+  </div>
+
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ═══════════════════════════════════════════════════════════════
+       3D SIMPLEX NOISE
+       Compact implementation — identical to landing.html
+       ═══════════════════════════════════════════════════════════════ */
+
+    const SimplexNoise = (function () {
+      const grad3 = new Float64Array([
+         1, 1, 0,  -1, 1, 0,   1,-1, 0,  -1,-1, 0,
+         1, 0, 1,  -1, 0, 1,   1, 0,-1,  -1, 0,-1,
+         0, 1, 1,   0,-1, 1,   0, 1,-1,   0,-1,-1
+      ]);
+      const p = new Uint8Array([
+        151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,
+        140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,
+        247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,
+        57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,
+        74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,
+        60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,
+        65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,
+        200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,
+        52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,
+        207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,
+        119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,
+        129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,
+        218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,
+        81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,
+        184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,
+        222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+      ]);
+      const perm = new Uint8Array(512);
+      const permMod12 = new Uint8Array(512);
+      for (let i = 0; i < 512; i++) {
+        perm[i] = p[i & 255];
+        permMod12[i] = perm[i] % 12;
+      }
+      const F3 = 1.0 / 3.0, G3 = 1.0 / 6.0;
+      function dot3(gi, x, y, z) {
+        const idx = gi * 3;
+        return grad3[idx] * x + grad3[idx+1] * y + grad3[idx+2] * z;
+      }
+      function noise3D(xin, yin, zin) {
+        const s = (xin + yin + zin) * F3;
+        const i = Math.floor(xin + s), j = Math.floor(yin + s), k = Math.floor(zin + s);
+        const t = (i + j + k) * G3;
+        const x0 = xin - (i - t), y0 = yin - (j - t), z0 = zin - (k - t);
+        let i1,j1,k1,i2,j2,k2;
+        if (x0>=y0) {
+          if (y0>=z0)      {i1=1;j1=0;k1=0;i2=1;j2=1;k2=0;}
+          else if (x0>=z0) {i1=1;j1=0;k1=0;i2=1;j2=0;k2=1;}
+          else             {i1=0;j1=0;k1=1;i2=1;j2=0;k2=1;}
+        } else {
+          if (y0<z0)       {i1=0;j1=0;k1=1;i2=0;j2=1;k2=1;}
+          else if (x0<z0)  {i1=0;j1=1;k1=0;i2=0;j2=1;k2=1;}
+          else             {i1=0;j1=1;k1=0;i2=1;j2=1;k2=0;}
+        }
+        const x1=x0-i1+G3, y1=y0-j1+G3, z1=z0-k1+G3;
+        const x2=x0-i2+2*G3, y2=y0-j2+2*G3, z2=z0-k2+2*G3;
+        const x3=x0-1+3*G3, y3=y0-1+3*G3, z3=z0-1+3*G3;
+        const ii=i&255, jj=j&255, kk=k&255;
+        const gi0=permMod12[ii+perm[jj+perm[kk]]];
+        const gi1=permMod12[ii+i1+perm[jj+j1+perm[kk+k1]]];
+        const gi2=permMod12[ii+i2+perm[jj+j2+perm[kk+k2]]];
+        const gi3=permMod12[ii+1+perm[jj+1+perm[kk+1]]];
+        let n0,n1,n2,n3;
+        let t0=0.6-x0*x0-y0*y0-z0*z0;
+        n0=t0<0?0:(t0*=t0,t0*t0*dot3(gi0,x0,y0,z0));
+        let t1=0.6-x1*x1-y1*y1-z1*z1;
+        n1=t1<0?0:(t1*=t1,t1*t1*dot3(gi1,x1,y1,z1));
+        let t2=0.6-x2*x2-y2*y2-z2*z2;
+        n2=t2<0?0:(t2*=t2,t2*t2*dot3(gi2,x2,y2,z2));
+        let t3=0.6-x3*x3-y3*y3-z3*z3;
+        n3=t3<0?0:(t3*=t3,t3*t3*dot3(gi3,x3,y3,z3));
+        return 32.0*(n0+n1+n2+n3);
+      }
+      return { noise3D };
+    })();
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       MATH UTILITIES
+       ═══════════════════════════════════════════════════════════════ */
+
+    function smoothstep(edge0, edge1, x) {
+      const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+      return t * t * (3 - 2 * t);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    const TWO_PI = Math.PI * 2;
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       CONFIGURATION
+       Particle surface identical to landing.html.
+       Transition parameters layered on top.
+       ═══════════════════════════════════════════════════════════════ */
+
+    const CFG = {
+      // Grid — identical to landing.html
+      spacing: 12,
+      dotRadius: 1.2,
+
+      // Surface band
+      surfaceTop: 0.12,
+      surfaceBottom: 0.88,
+      fadeZone: 0.16,
+
+      // Noise octaves — identical to landing.html
+      noise: [
+        { fx: 0.0030, fy: 0.0070, speed: 0.050, amp: 36 },
+        { fx: 0.0060, fy: 0.013,  speed: 0.080, amp: 20 },
+        { fx: 0.013,  fy: 0.024,  speed: 0.13,  amp: 8  },
+      ],
+
+      // Cursor interaction — identical to landing.html
+      cursorRadius: 150,
+      cursorDepth: 38,
+      cursorSigma: 52,
+      cursorPull: 0.08,
+
+      // Spring physics — identical to landing.html
+      stiffness: 0.028,
+      damping: 0.84,
+
+      // ── Transition parameters ──
+      dividerSpacing: 4.5,          // Vertical spacing of divider dots
+      dividerAlpha: 0.50,           // Divider dot brightness
+      dividerRadius: 1.15,          // Divider dot size
+      bgMinAmp: 0.06,              // Minimum wave amplitude in portfolio state
+      bgMinBrightness: 0.13,       // Minimum background brightness
+      scrollSensitivity: 0.00045,   // Scroll delta to progress conversion
+      progressLerp: 0.10,           // Smoothing factor for progress interpolation
+    };
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       STATE
+       ═══════════════════════════════════════════════════════════════ */
+
+    const canvas = document.getElementById('surface');
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    // DOM references
+    const landingTitle   = document.getElementById('landing-title');
+    const landingTagline = document.getElementById('landing-tagline');
+    const scrollHint     = document.getElementById('scroll-hint');
+    const portfolioEl    = document.getElementById('portfolio');
+    const pfNav          = document.getElementById('pf-nav');
+    const pfContent      = document.getElementById('pf-content');
+    const navItems       = document.querySelectorAll('[data-order]');
+    const navBrand       = document.getElementById('nav-brand');
+    const sections       = document.querySelectorAll('.pf-section, .pf-ending');
+    const navLinks       = document.querySelectorAll('.pf-nav-main .pf-nav-item');
+
+    let W, H, dpr;
+    let dots = [];
+    let mouse = { x: -9999, y: -9999, active: false };
+    let time = 0;
+
+    // Transition state
+    let targetProgress  = 0;   // Where scroll wants to go
+    let progress        = 0;   // Current interpolated progress (0 = landing, 1 = portfolio)
+    let DIVIDER_X       = 120; // Computed on init
+
+    // Scroll mode state
+    let isNativeScroll  = false;
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       BUILD THE INVISIBLE SURFACE
+       Grid identical to landing.html, extended slightly for divider.
+       Each dot is pre-assigned a role (divider or background).
+       ═══════════════════════════════════════════════════════════════ */
+
+    function buildSurface() {
+      dots = [];
+      const sp = CFG.spacing;
+
+      // Extend grid slightly beyond cloth range for full-height divider
+      const gridTop = H * 0.04;
+      const gridBot = H * 0.96;
+      const cols = Math.ceil(W / sp) + 2;
+      const rows = Math.ceil((gridBot - gridTop) / sp) + 2;
+      const offsetX = (W - (cols - 1) * sp) * 0.5;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          dots.push({
+            gx: offsetX + c * sp,
+            gy: gridTop + r * sp,
+            // Spring state (cursor interaction)
+            sz: 0, svz: 0,
+            sx: 0, svx: 0,
+            // Transition properties (assigned by assignRoles)
+            role: 'background',
+            tx: 0, ty: 0,
+            migStart: 0, migEnd: 1,
+            divDist: 0,
+          });
+        }
+      }
+
+      assignRoles();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       ASSIGN ROLES — Divider vs Background
+       Select dots nearest to the divider line and assign them
+       target positions along the vertical divider.
+       ═══════════════════════════════════════════════════════════════ */
+
+    function assignRoles() {
+      const divX = DIVIDER_X;
+      const spacing = CFG.dividerSpacing;
+      const numDiv = Math.ceil(H / spacing);
+
+      // Create target positions for the divider line
+      const targets = [];
+      for (let i = 0; i < numDiv; i++) {
+        targets.push({ x: divX, y: i * spacing + spacing * 0.5 });
+      }
+
+      // Greedy assignment: for each target, find closest unused dot
+      const used = new Set();
+
+      for (let t = 0; t < targets.length; t++) {
+        const target = targets[t];
+        let bestIdx = -1;
+        let bestDist2 = Infinity;
+
+        for (let j = 0; j < dots.length; j++) {
+          if (used.has(j)) continue;
+          const dx = dots[j].gx - target.x;
+          const dy = dots[j].gy - target.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestDist2) {
+            bestDist2 = d2;
+            bestIdx = j;
+          }
+        }
+
+        if (bestIdx >= 0) {
+          used.add(bestIdx);
+          const d = dots[bestIdx];
+          d.role = 'divider';
+          d.tx = target.x;
+          d.ty = target.y;
+          d.divDist = Math.sqrt(bestDist2);
+        }
+      }
+
+      // Compute migration timing based on distance to divider
+      let maxDist = 0;
+      for (const d of dots) {
+        if (d.role === 'divider' && d.divDist > maxDist) maxDist = d.divDist;
+      }
+
+      for (const d of dots) {
+        if (d.role === 'divider') {
+          const nd = maxDist > 0 ? d.divDist / maxDist : 0;
+          // Closer dots migrate earlier (stage 2–3)
+          d.migStart = 0.16 + nd * 0.20;   // 0.16 to 0.36
+          d.migEnd   = 0.40 + nd * 0.30;   // 0.40 to 0.70
+        }
+        // Background dots keep defaults
+      }
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       SURFACE HEIGHT — Layered simplex noise
+       Identical to landing.html
+       ═══════════════════════════════════════════════════════════════ */
+
+    function surfaceZ(x, y, t) {
+      let z = 0;
+      const n = CFG.noise;
+      z += SimplexNoise.noise3D(x * n[0].fx, y * n[0].fy, t * n[0].speed) * n[0].amp;
+      z += SimplexNoise.noise3D(x * n[1].fx + 7.3, y * n[1].fy + 3.1, t * n[1].speed) * n[1].amp;
+      z += SimplexNoise.noise3D(x * n[2].fx + 13.7, y * n[2].fy + 9.8, t * n[2].speed) * n[2].amp;
+      return z;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       VERTICAL FADE — Dissolve into black at edges
+       Identical to landing.html
+       ═══════════════════════════════════════════════════════════════ */
+
+    function vertFade(sy) {
+      const top = H * CFG.surfaceTop;
+      const bot = H * CFG.surfaceBottom;
+      const fh = H * CFG.fadeZone;
+      if (sy < top || sy > bot) return 0;
+      if (sy < top + fh) { const t = (sy - top) / fh; return t * t * t; }
+      if (sy > bot - fh) { const t = (bot - sy) / fh; return t * t * t; }
+      return 1.0;
+    }
+
+    // Extended fade for portfolio state — wider range, gentler
+    function vertFadeExtended(sy) {
+      const top = H * 0.03;
+      const bot = H * 0.97;
+      const fh = H * 0.08;
+      if (sy < top || sy > bot) return 0;
+      if (sy < top + fh) { const t = (sy - top) / fh; return t * t; }
+      if (sy > bot - fh) { const t = (bot - sy) / fh; return t * t; }
+      return 1.0;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCROLL CONTROLLER — Hijacks scroll to drive transition
+       ═══════════════════════════════════════════════════════════════ */
+
+    function triggerReverse() {
+      isNativeScroll = false;
+      pfContent.scrollTo({ top: 0, behavior: 'instant' });
+      targetProgress = 0;
+      sections.forEach(function(s) { s.classList.remove('revealed'); });
+      navLinks.forEach(function(l) { l.classList.remove('active'); });
+    }
+
+    function onWheel(e) {
+      // In native scroll mode, check if user scrolled to top → reverse
+      if (isNativeScroll) {
+        if (pfContent.scrollTop <= 0 && e.deltaY < 0) {
+          triggerReverse();
+          e.preventDefault();
+        }
+        return;
+      }
+      e.preventDefault();
+      targetProgress += e.deltaY * CFG.scrollSensitivity;
+      targetProgress = Math.max(0, Math.min(1, targetProgress));
+    }
+
+    // Touch handling for mobile
+    let touchStartY = 0;
+    function onTouchStart(e) {
+      if (isNativeScroll) return;
+      touchStartY = e.touches[0].clientY;
+    }
+    function onTouchMoveScroll(e) {
+      if (isNativeScroll) {
+        if (pfContent.scrollTop <= 0) {
+          const delta = touchStartY - e.touches[0].clientY;
+          if (delta < -20) {
+            triggerReverse();
+          }
+        }
+        return;
+      }
+      e.preventDefault();
+      const delta = touchStartY - e.touches[0].clientY;
+      touchStartY = e.touches[0].clientY;
+      targetProgress += delta * 0.002;
+      targetProgress = Math.max(0, Math.min(1, targetProgress));
+    }
+
+    // Reverse transition on Home click
+    navBrand.addEventListener('click', function(e) {
+      e.preventDefault();
+      triggerReverse();
+    });
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       UI UPDATER — Typography fade, portfolio reveal
+       Driven entirely by progress value.
+       ═══════════════════════════════════════════════════════════════ */
+
+    function updateUI() {
+      // ── Landing typography fade (Stage 4: 55%–82%) ──
+      const titleOpacity = 1.0 - smoothstep(0.55, 0.82, progress);
+      landingTitle.style.opacity = titleOpacity;
+      landingTagline.style.opacity = (0.40 * (1.0 - smoothstep(0.52, 0.80, progress)));
+
+      // ── Scroll hint fade ──
+      scrollHint.style.opacity = 1.0 - smoothstep(0, 0.15, progress);
+
+      // ── Scroll mode switch ──
+      if (progress >= 0.99 && targetProgress === 1) {
+        isNativeScroll = true;
+      }
+      if (progress < 0.05 && targetProgress === 0) {
+        isNativeScroll = false;
+      }
+
+      // ── Portfolio interactivity ──
+      if (progress > 0.96) {
+        portfolioEl.classList.add('interactive');
+      } else {
+        portfolioEl.classList.remove('interactive');
+      }
+
+      // ── Navigation reveal (Stage 5: sequential, 82%–98%) ──
+      const navStart = 0.82;
+      const navStagger = 0.022;
+      const navDuration = 0.07;
+
+      navItems.forEach(function (item) {
+        const order = parseInt(item.getAttribute('data-order') || '0');
+        const start = navStart + order * navStagger;
+        const end = start + navDuration;
+        const p = smoothstep(start, end, progress);
+        if (p >= 0.999) {
+          item.style.opacity = '';
+          item.style.transform = '';
+        } else {
+          const ep = easeOutCubic(p);
+          item.style.opacity = p;
+          item.style.transform = 'translateX(' + lerp(-8, 0, ep) + 'px)';
+        }
+      });
+
+      // ── Content reveal (Stage 5: 86%–98%) ──
+      const contentP = smoothstep(0.86, 0.98, progress);
+      if (contentP >= 0.999) {
+        pfContent.style.opacity = '';
+        pfContent.style.transform = '';
+      } else {
+        const contentEP = easeOutCubic(contentP);
+        pfContent.style.opacity = contentP;
+        pfContent.style.transform = 'translateX(' + lerp(12, 0, contentEP) + 'px)';
+      }
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       CANVAS INIT / RESIZE
+       ═══════════════════════════════════════════════════════════════ */
+
+    function initCanvas() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Compute divider position (responsive)
+      DIVIDER_X = Math.max(90, Math.min(160, W * 0.08));
+      document.documentElement.style.setProperty('--divider-x', DIVIDER_X + 'px');
+
+      buildSurface();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       RENDER LOOP
+       
+       The core of the transition. Every frame:
+       1. Interpolate progress toward target
+       2. Compute transition-modulated parameters
+       3. For each dot: compute cloth position, target position,
+          interpolate, compute alpha, render
+       4. Update UI elements
+       
+       Philosophy:
+         Invisible Surface → Surface Deforms → Dots Render Surface
+         At progress 1.0, the surface has reorganized into a UI
+       ═══════════════════════════════════════════════════════════════ */
+
+    function frame(ts) {
+      requestAnimationFrame(frame);
+      time = ts * 0.001;
+
+      // ── Smooth progress interpolation ──
+      progress += (targetProgress - progress) * CFG.progressLerp;
+      if (Math.abs(progress - targetProgress) < 0.0004) {
+        progress = targetProgress;
+      }
+
+      // ── Transition-modulated parameters ──
+      // Wave amplitude: full at 0%, minimal residual at 50%+
+      const ampFactor = Math.max(CFG.bgMinAmp, 1.0 - smoothstep(0, 0.50, progress));
+
+      // Cursor interaction strength: full at 0%, very weak at 65%+
+      const cursorFactor = Math.max(0.08, 1.0 - smoothstep(0.15, 0.65, progress));
+
+      // Background brightness: full at 0%, dim at 85%+
+      const bgBright = Math.max(CFG.bgMinBrightness, 1.0 - smoothstep(0.30, 0.85, progress) * 0.87);
+
+      // Vertical fade blending: original at 0%, extended at 100%
+      const fadeBlend = smoothstep(0.3, 0.8, progress);
+
+      // ── Clear canvas ──
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, W, H);
+
+      // ── Pre-compute cursor values ──
+      const mx = mouse.x;
+      const my = mouse.y;
+      const cursorOn = mouse.active;
+      const cR = CFG.cursorRadius;
+      const cR2 = cR * cR;
+      const sig2 = 2 * CFG.cursorSigma * CFG.cursorSigma;
+      const cDepth = CFG.cursorDepth * cursorFactor;
+      const cPull = CFG.cursorPull * cursorFactor;
+      const stiff = CFG.stiffness;
+      const damp = CFG.damping;
+      const dotR = CFG.dotRadius;
+
+      ctx.fillStyle = '#ffffff';
+
+      // ── Render each dot ──
+      for (let i = 0, len = dots.length; i < len; i++) {
+        const d = dots[i];
+
+        // ─── Cloth position (always computed for reversibility) ───
+
+        // Surface height with modulated amplitude
+        const az = surfaceZ(d.gx, d.gy, time) * ampFactor;
+
+        // Subtle horizontal drift
+        const ax = SimplexNoise.noise3D(
+          d.gx * 0.002 + 200, d.gy * 0.003 + 400, time * 0.06
+        ) * 3.5 * ampFactor;
+
+        // Cursor interaction (spring physics)
+        let tz = 0, tx = 0;
+        if (cursorOn && cDepth > 0.5) {
+          const dx = mx - d.gx;
+          const dy = my - d.gy;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < cR2) {
+            const g = Math.exp(-dist2 / sig2);
+            tz = cDepth * g;
+            const dist = Math.sqrt(dist2);
+            if (dist > 0.5) {
+              tx = (dx / dist) * g * cDepth * cPull;
+            }
+          }
+        }
+
+        d.svz += (tz - d.sz) * stiff;
+        d.svz *= damp;
+        d.sz += d.svz;
+        d.svx += (tx - d.sx) * stiff;
+        d.svx *= damp;
+        d.sx += d.svx;
+
+        // Cloth position
+        const clothX = d.gx + ax + d.sx;
+        const clothY = d.gy + az + d.sz;
+
+        let screenX, screenY, alpha, radius;
+
+        if (d.role === 'divider') {
+          // ─── Divider dot: interpolate cloth → divider line ───
+
+          // Per-dot progress with staggered timing
+          const rawP = smoothstep(d.migStart, d.migEnd, progress);
+          const ep = easeInOutCubic(rawP);
+
+          // Interpolate position
+          screenX = lerp(clothX, d.tx, ep);
+          screenY = lerp(clothY, d.ty, ep);
+
+          // Compute cloth alpha (same as landing logic)
+          const clothFade = vertFade(clothY);
+          const nB = SimplexNoise.noise3D(d.gx * 0.004 + 50, d.gy * 0.005 + 80, time * 0.03);
+          const clothOp = 0.58 + 0.32 * (nB * 0.5 + 0.5);
+          const clothAlpha = clothFade * clothOp;
+
+          // Divider alpha: full brightness, extended fade zone
+          const divFade = vertFadeExtended(d.ty);
+          const divAlpha = divFade * CFG.dividerAlpha;
+
+          // Blend between cloth alpha and divider alpha
+          alpha = lerp(clothAlpha, divAlpha, ep);
+
+          // Radius: blend between depth-varied and fixed
+          const depthR = dotR + (az * 0.008);
+          const clothR = Math.max(0.6, Math.min(1.8, depthR));
+          radius = lerp(clothR, CFG.dividerRadius, ep);
+
+        } else {
+          // ─── Background dot: cloth with reducing amplitude/brightness ───
+
+          screenX = clothX;
+          screenY = clothY;
+
+          // Blended vertical fade (original → extended as progress increases)
+          const origFade = vertFade(screenY);
+          const extFade = vertFadeExtended(screenY);
+          const fade = lerp(origFade, extFade, fadeBlend);
+
+          if (fade < 0.008) continue;
+
+          // Opacity with spatial variation
+          const nB = SimplexNoise.noise3D(d.gx * 0.004 + 50, d.gy * 0.005 + 80, time * 0.03);
+          const opVar = 0.58 + 0.32 * (nB * 0.5 + 0.5);
+          alpha = fade * opVar * bgBright;
+
+          // Depth-based size
+          const depthR = dotR + (az * 0.008);
+          radius = Math.max(0.6, Math.min(1.8, depthR));
+        }
+
+        if (alpha < 0.005) continue;
+
+        // ─── Render ───
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, radius, 0, TWO_PI);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1.0;
+
+      // ── Update HTML UI ──
+      updateUI();
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       INPUT EVENTS
+       ═══════════════════════════════════════════════════════════════ */
+
+    // Cursor tracking (identical to landing.html)
+    window.addEventListener('mousemove', function (e) {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.active = true;
+    });
+    window.addEventListener('mouseleave', function () {
+      mouse.active = false;
+    });
+    document.addEventListener('touchmove', function (e) {
+      mouse.x = e.touches[0].clientX;
+      mouse.y = e.touches[0].clientY;
+      mouse.active = true;
+    }, { passive: true });
+    document.addEventListener('touchend', function () {
+      mouse.active = false;
+    });
+
+    // Scroll hijacking
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMoveScroll, { passive: false });
+
+    // Keyboard: arrow keys / space for accessibility
+    window.addEventListener('keydown', function (e) {
+      if (isNativeScroll) return;
+      if (e.key === 'ArrowDown' || e.key === ' ') {
+        e.preventDefault();
+        targetProgress = Math.min(1, targetProgress + 0.08);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        targetProgress = Math.max(0, targetProgress - 0.08);
+      }
+    });
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       INTERSECTION OBSERVERS
+       ═══════════════════════════════════════════════════════════════ */
+
+    // Reveal sections on scroll
+    const revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, {
+      root: pfContent,
+      rootMargin: '0px 0px -12% 0px',
+      threshold: 0
+    });
+
+    // Active nav tracking
+    const navObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navLinks.forEach(function(link) {
+            if (link.getAttribute('href') === '#' + id) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, {
+      root: pfContent,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0
+    });
+
+    sections.forEach(function(sec) {
+      revealObserver.observe(sec);
+      navObserver.observe(sec);
+    });
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       INITIALIZATION
+       ═══════════════════════════════════════════════════════════════ */
+
+    initCanvas();
+    requestAnimationFrame(frame);
+
+    let resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        initCanvas();
+      }, 200);
+    });
+
+  })();
+  </script>
+
+</body>
+</html>
