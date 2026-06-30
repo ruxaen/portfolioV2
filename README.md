@@ -6,7 +6,7 @@ The site opens with an interactive particle surface that transitions into a mini
 
 ## Files
 
-* `portfolio.html` - the complete portfolio page, including HTML, CSS, and JavaScript.
+* `index.html` - the complete portfolio page, including HTML, CSS, and JavaScript.
 * `README.md` - project notes.
 
 ## Tech
@@ -15,4 +15,4 @@ The site opens with an interactive particle surface that transitions into a mini
 * CSS
 * JavaScript
 
-No build step is required. Open `portfolio.html` directly in a browser.
+No build step is required. Open `index.html` directly in a browser.
